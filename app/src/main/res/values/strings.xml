@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Scanner</string>
+    <string name="app_main_pattern_tv">选择文档导入方式</string>
+    <string name="app_main_pattern_camera">相机</string>
+    <string name="app_main_pattern_album">相册</string>
+
+    <string name="app_main_manipulation_tv">浏览已处理图片</string>
+
+</resources>

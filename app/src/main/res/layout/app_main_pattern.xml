@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="8dp">
+
+    <TextView
+        android:id="@+id/app_main_pattern_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp"
+        android:text="@string/app_main_pattern_tv"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="@color/app_grey"
+        />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/app_main_pattern_camera"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="8dp"
+            android:padding="12sp"
+            android:background="@drawable/app_pattern_bt_cam"
+            android:drawableTop="@drawable/app_camera_48"
+            android:text="@string/app_main_pattern_camera"
+            android:textColor="@color/app_white"
+            android:textSize="16sp"
+            />
+        <Button
+            android:id="@+id/app_main_pattern_album"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="8dp"
+            android:padding="12sp"
+            android:background="@drawable/app_pattern_bt_alb"
+            android:drawableTop="@drawable/app_album_48"
+            android:text="@string/app_main_pattern_album"
+            android:textSize="16sp"
+            android:textColor="@color/app_white"
+            />
+    </LinearLayout>
+
+</LinearLayout>
