@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/dialog_background"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/app_album_dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:text="@string/app_album_dialog_title"
+        android:textSize="18sp"
+        android:textColor="@color/app_black"
+        />
+    <ImageView
+        android:layout_width="45dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/app_dialog_line"
+        />
+    <TextView
+        android:id="@+id/app_album_dialog_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="4dp"
+        android:text="@string/app_album_dialog_content"
+        android:textSize="16sp"
+        android:textColor="@color/app_black"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/app_album_dialog_positive_bt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/app_white"
+            android:text="是"
+            android:textSize="16sp"
+            android:textColor="@color/app_black"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="|"
+            android:textSize="16sp"
+            android:textColor="@color/app_light_blue"
+            android:textStyle="bold"
+            android:gravity="center"
+            />
+        <Button
+            android:id="@+id/app_album_dialog_negative_bt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/app_white"
+            android:text="否"
+            android:textSize="16sp"
+            android:textColor="@color/app_black"
+            />
+
+    </LinearLayout>
+
+
+</LinearLayout>

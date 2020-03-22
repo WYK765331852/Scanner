@@ -5,5 +5,13 @@
     <string name="app_main_pattern_album">相册</string>
 
     <string name="app_main_manipulation_tv">浏览已处理图片</string>
+    
+    <string name="app_album_reselect">重新选择</string>
+    <string name="app_album_correction">文档校正</string>
+    <string name="app_album_save">保存</string>
+
+    <string name="app_album_dialog_title">提示</string>
+    <string name="app_album_dialog_content">即将前往系统相册，是否允许？</string>
+
 
 </resources>

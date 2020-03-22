@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <Button
-            android:id="@+id/app_main_pattern_camera"
+            android:id="@+id/app_main_pattern_camera_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -33,7 +33,7 @@
             android:textSize="16sp"
             />
         <Button
-            android:id="@+id/app_main_pattern_album"
+            android:id="@+id/app_main_pattern_album_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
