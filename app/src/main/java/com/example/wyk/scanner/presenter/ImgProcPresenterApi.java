@@ -6,9 +6,9 @@ import android.graphics.Bitmap;
 import org.opencv.core.Mat;
 
 public interface ImgProcPresenterApi {
-    void preProcessImg(Context context, Mat src, Mat dst);
+    void preProcessImg(Context context, Mat src, Mat dst, double rotatedAngle);
 
-    void correctionImg(Context context, Mat src, Mat dst);
+    void correctionDocImg(Context context, Mat src, Mat dst);
 
     void saveImg(Context context, Bitmap src);
 

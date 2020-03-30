@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
@@ -17,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.wyk.scanner.R;
+import com.example.wyk.scanner.model.PreProcessUtil;
 import com.example.wyk.scanner.presenter.ImgProcPresenterApi;
 import com.example.wyk.scanner.presenter.ImgProcPresenterApiImpl;
 
@@ -41,6 +43,7 @@ public class CamImgProcessActivity extends AppCompatActivity implements ViewApi 
     Mat correctionDstMat;
 
     Bitmap originalBmp;
+    PreProcessUtil processUtil;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,6 +57,7 @@ public class CamImgProcessActivity extends AppCompatActivity implements ViewApi 
         saveTv = findViewById(R.id.app_album_save_tv);
         progressBar = findViewById(R.id.app_album_progressbar);
 
+        processUtil = new PreProcessUtil();
 //        获取屏幕宽度，放大图片
         WindowManager windowManager = this.getWindowManager();
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -63,8 +67,8 @@ public class CamImgProcessActivity extends AppCompatActivity implements ViewApi 
 //        originalBmp 四通道 ARGB
         originalBmp = Bitmap.createBitmap(mOriginalRGBA.width(), mOriginalRGBA.height(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mOriginalRGBA, originalBmp);
-        originalBmp = rotateImg(90, originalBmp);
-        originalBmp = scaleImg(originalBmp, windowWidth);
+        originalBmp = processUtil.rotateImg(90, originalBmp);
+        originalBmp = processUtil.scaleImg(originalBmp, windowWidth);
         originalIv.setImageBitmap(originalBmp);
 
         Mat preProcessingSrcMat = new Mat(originalBmp.getWidth(), originalBmp.getHeight(), CvType.CV_8UC4);
@@ -75,7 +79,7 @@ public class CamImgProcessActivity extends AppCompatActivity implements ViewApi 
 
         imgProcPresenter = new ImgProcPresenterApiImpl(this);
 //        进入页面即开始自动预处理
-        imgProcPresenter.preProcessImg(CamImgProcessActivity.this, preProcessingSrcMat, preProcessingDstMat);
+        imgProcPresenter.preProcessImg(CamImgProcessActivity.this, preProcessingSrcMat, preProcessingDstMat, 90.0);
 
         reselectTv.setOnClickListener(view -> {
             Intent reselectIntent = new Intent(CamImgProcessActivity.this, CameraActivity.class);
@@ -87,7 +91,8 @@ public class CamImgProcessActivity extends AppCompatActivity implements ViewApi 
             @Override
             public void onClick(View view) {
 //                应该放入预处理之后的结果
-//                imgProcPresenter.correctionImg(preProcessingDstMat, correctionDstMat);
+//                imgProcPresenter.correctionDocImg(preProcessingDstMat, correctionDstMat);
+                Toast.makeText(CamImgProcessActivity.this, "还没写哦", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -115,8 +120,13 @@ public class CamImgProcessActivity extends AppCompatActivity implements ViewApi 
     }
 
     @Override
-    public void setPreProcessError() {
-        Toast.makeText(CamImgProcessActivity.this, "预处理失败😟", Toast.LENGTH_SHORT).show();
+    public void setPreProcessError(String error) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(CamImgProcessActivity.this, "预处理失败😟: "+error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -126,12 +136,23 @@ public class CamImgProcessActivity extends AppCompatActivity implements ViewApi 
 
     @Override
     public void setSaveImgError() {
-        Toast.makeText(CamImgProcessActivity.this, "保存图片失败😟", Toast.LENGTH_SHORT).show();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(CamImgProcessActivity.this, "保存图片失败😟", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
     public void setPreProcessSuccess(Bitmap bmp) {
-//        Toast.makeText(CamImgProcessActivity.this, "预处理完成😊", Toast.LENGTH_SHORT).show();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(CamImgProcessActivity.this, "预处理完成😊", Toast.LENGTH_SHORT).show();
+            }
+        });
+//        bmp = processUtil.scaleImg();
         originalIv.setImageBitmap(bmp);
     }
 
@@ -142,37 +163,11 @@ public class CamImgProcessActivity extends AppCompatActivity implements ViewApi 
 
     @Override
     public void setSaveImgSuccess() {
-        Toast.makeText(CamImgProcessActivity.this, "图片已保存😃", Toast.LENGTH_SHORT).show();
-    }
-
-    //    旋转
-    public Bitmap rotateImg(int angle, Bitmap bmp) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(angle);
-        Bitmap resizeBmp = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
-        if (resizeBmp != bmp && bmp != null && !bmp.isRecycled()) {
-            bmp.recycle();
-            bmp = null;
-        }
-        return resizeBmp;
-    }
-
-    //    缩放
-    public Bitmap scaleImg(Bitmap bmp, int newWidth) {
-        if (bmp == null) {
-            return null;
-        }
-        int width = bmp.getWidth();
-        int height = bmp.getHeight();
-        float scale = ((float) newWidth) / width;
-        Matrix matrix = new Matrix();
-        matrix.postScale(scale, scale);
-        Bitmap newBmp = Bitmap.createBitmap(bmp, 0, 0, width, height, matrix, true);
-        if (bmp != null && !bmp.isRecycled()) {
-            //销毁原图
-            bmp.recycle();
-            bmp = null;
-        }
-        return newBmp;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(CamImgProcessActivity.this, "图片已保存😃", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

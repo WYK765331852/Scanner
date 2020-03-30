@@ -20,15 +20,15 @@ public class ImgProcPresenterApiImpl implements ImgProcPresenterApi, OnImgProcFi
     }
 
     @Override
-    public void preProcessImg(Context context, Mat src, Mat dst) {
+    public void preProcessImg(Context context, Mat src, Mat dst, double rotatedAngle) {
         if (viewApi != null) {
             viewApi.showProgressBar();
         }
-        imageModelApi.preProcessImg(context, src, dst, this);
+        imageModelApi.preProcessImg(context, src, dst, rotatedAngle, this);
     }
 
     @Override
-    public void correctionImg(Context context, Mat src, Mat dst) {
+    public void correctionDocImg(Context context, Mat src, Mat dst) {
         if (viewApi != null) {
             viewApi.showProgressBar();
         }
@@ -57,9 +57,9 @@ public class ImgProcPresenterApiImpl implements ImgProcPresenterApi, OnImgProcFi
     }
 
     @Override
-    public void onPreProcessImgError() {
+    public void onPreProcessImgError(String error) {
         if (viewApi != null) {
-            viewApi.setPreProcessError();
+            viewApi.setPreProcessError(error);
             viewApi.hideProgressBar();
         }
     }

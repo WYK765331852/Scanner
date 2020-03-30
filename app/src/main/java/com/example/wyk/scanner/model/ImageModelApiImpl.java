@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.wyk.scanner.presenter.OnImgProcFinishedListener;
 
@@ -17,6 +18,9 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -26,6 +30,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.example.wyk.scanner.view.CameraActivity.TAG_TEST;
@@ -38,9 +45,11 @@ public class ImageModelApiImpl implements ImageModelApi {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                File appDir = new File(Environment.getExternalStorageDirectory(), "Scanner");
+//                File appDir = new File(Environment.getExternalStorageDirectory(), "Scanner");
+                File appDir = context.getExternalFilesDir("Scanner");
                 if (!appDir.exists()) {
                     appDir.mkdir();
+                    Log.d(TAG_TEST, "Scanner创建！");
                 }
                 String fileName = System.currentTimeMillis() + ".jpg";
                 File file = new File(appDir, fileName);
@@ -62,10 +71,13 @@ public class ImageModelApiImpl implements ImageModelApi {
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
+                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                 Uri uri = Uri.fromFile(file);
+                mediaScanIntent.setData(uri);
+                context.sendBroadcast(mediaScanIntent);
                 // 最后通知图库更新
-//        context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + Environment.getExternalStorageDirectory()+"Scanner")));
-                context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE), uri.toString());
+//                context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + Environment.getExternalStorageDirectory() + "Scanner")));
+//                context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE), uri.toString());
                 if (bmp != null && uri != null) {
                     onImgProcFinishedListener.onSaveImgSuccess();
                 }
@@ -76,11 +88,12 @@ public class ImageModelApiImpl implements ImageModelApi {
 
     //    预处理代码写这里
     @Override
-    public void preProcessImg(Context context, Mat src, Mat dst, OnImgProcFinishedListener onImgProcFinishedListener) {
+    public void preProcessImg(Context context, Mat src, Mat dst, double rotatedAngle, OnImgProcFinishedListener onImgProcFinishedListener) {
 //        rows: Mat矩阵的行数。
 //        cols: Mat矩阵的列数。
 //        depth: 用来度量每一个像素中每一个通道的精度，但它本身与图像的通道数无关！
-        Log.d(TAG_TEST, "运行到model-preprocessing");
+        final Bitmap[] dstBmp = new Bitmap[1];
+        final Mat[] warpedMat = new Mat[1];
         Mat kernel = new Mat(3, 3, CvType.CV_32F, new Scalar(-1));
         kernel.put(1, 1, 8.9);
 //        新线程中运行，以面UI阻塞
@@ -93,7 +106,7 @@ public class ImageModelApiImpl implements ImageModelApi {
 //                灰度化
                 Imgproc.cvtColor(dst, dst, Imgproc.COLOR_RGBA2GRAY);
 //                高斯滤波
-                Imgproc.GaussianBlur(dst, dst, new Size(3, 3), 0);
+                Imgproc.GaussianBlur(dst, dst, new Size(5, 5), 0);
 //                二值化
                 /*
                 thresh: 阈值
@@ -107,12 +120,13 @@ public class ImageModelApiImpl implements ImageModelApi {
 
 //                闭运算
                 Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
-                Imgproc.morphologyEx(dst, dst, Imgproc.MORPH_CLOSE, element);
+//                Imgproc.morphologyEx(dst, dst, Imgproc.MORPH_CLOSE, element);
 //                腐蚀
                 Imgproc.erode(dst, dst, element);
+//                膨胀
+                Imgproc.dilate(dst, dst, element);
 //                边缘检测
-                Imgproc.Canny(dst, dst, 30, 120, 3);
-
+                Imgproc.Canny(dst, dst, 75, 200, 3);
 //                查找轮廓
                 List<MatOfPoint> contours = new ArrayList<>();
                 Mat hierarchy = new Mat();
@@ -121,51 +135,58 @@ public class ImageModelApiImpl implements ImageModelApi {
 //                Imgproc.drawContours(dst, contours, -1, new Scalar(255), 3);
 
 //                再次查找轮廓
-                contours.clear();
-                hierarchy = new Mat();
-                Imgproc.findContours(dst, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
+//                contours.clear();
+//                hierarchy = new Mat();
+//                Imgproc.findContours(dst, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
 
-//                获取最大轮廓并画出
-                double maxArea = -1;
-                double maxAreaIdx = -1;
-                MatOfPoint tempContour = contours.get(0);
-                MatOfPoint2f approxCurve = new MatOfPoint2f();
-                Mat largestContour = contours.get(0);
-                List<MatOfPoint> largestContours = new ArrayList<>();
-                for (int idx = 0; idx < contours.size(); idx++) {
-                    tempContour = contours.get(idx);
-                    double contourArea = Imgproc.contourArea(tempContour);
-                    if (contourArea > maxArea) {
-                        MatOfPoint2f newMat = new MatOfPoint2f(tempContour.toArray());
-                        int contourSize = (int) tempContour.total();
-                        Imgproc.approxPolyDP(newMat, approxCurve, contourSize * 0.05, true);
-                        if (approxCurve.total() == 4) {
-                            maxArea = contourArea;
-                            maxAreaIdx = idx;
-                            largestContours.add(tempContour);
-                            largestContour = tempContour;
-                        }
+
+                //从高到低排序
+                contours.sort(new Comparator<MatOfPoint>() {
+                    @Override
+                    public int compare(MatOfPoint m1, MatOfPoint m2) {
+                        return (int) (Imgproc.contourArea(m2) - Imgproc.contourArea(m1));
                     }
+                });
+//                Collections.reverse(contours);
+                List<Integer> indexList = new ArrayList<>();
+                PreProcessUtil preProcessUtil = new PreProcessUtil();
+                preProcessUtil.getMaxIndex(indexList, contours);
+
+                if (indexList != null){
+                    MatOfPoint2f matOfPoint2fMax = new MatOfPoint2f(contours.get(indexList.get(0)).toArray());
+                    double peri = Imgproc.arcLength(matOfPoint2fMax, true);
+                    MatOfPoint2f approxCurveMax = new MatOfPoint2f();
+                    Imgproc.approxPolyDP(matOfPoint2fMax, approxCurveMax, 0.02 * peri, true);
+                    MatOfPoint matOfPointMax = new MatOfPoint();
+                    approxCurveMax.convertTo(matOfPointMax, CvType.CV_32S);
+                    Point[] points = matOfPointMax.toArray();
+                    Log.d(TAG_TEST, "points length: " + points.length);
+                    for (int i = 0; i < points.length; i++) {
+                        Log.d(TAG_TEST, "point " + i + ": (" + points[i] + ")");
+                    }
+
+                    Point[] srcPoints = preProcessUtil.getSrcPoints(points);
+                    if (srcPoints != null){
+                        warpedMat[0] = preProcessUtil.getWarpedPerspective(src, srcPoints);
+                        dstBmp[0] = Bitmap.createBitmap(warpedMat[0].width(), warpedMat[0].height(), Bitmap.Config.ARGB_8888);
+                        Utils.matToBitmap(warpedMat[0], dstBmp[0]);
+                    }
+                }else {
+                    String errorDetect = "未检测到最大矩形框";
+                    onImgProcFinishedListener.onPreProcessImgError(errorDetect);
                 }
-                MatOfPoint mPoint = largestContours.get(largestContours.size() - 1);
-                contours.clear();
-                contours.add(mPoint);
-                //填充为黑色
-                dst.setTo(new Scalar(0));
-                Imgproc.drawContours(dst, contours, -1, new Scalar(255, 255, 255), 3);
 
-                Imgproc.cvtColor(dst, dst, Imgproc.COLOR_GRAY2RGBA);
-                Bitmap dstBmp = Bitmap.createBitmap(dst.width(), dst.height(), Bitmap.Config.ARGB_8888);
-                Utils.matToBitmap(dst, dstBmp);
-
-                if (dst != null && dstBmp != null) {
+                if (warpedMat[0] != null && dstBmp[0] != null) {
 //                    传入bitmap，通知view绘制
-                    onImgProcFinishedListener.onPreProcessSuccess((Activity)context, dstBmp);
+                    onImgProcFinishedListener.onPreProcessSuccess((Activity) context, dstBmp[0]);
                 } else {
-                    onImgProcFinishedListener.onPreProcessImgError();
+                    String errorBmp = "未获取到处理后的图像";
+                    onImgProcFinishedListener.onPreProcessImgError(errorBmp);
                 }
+
             }
         }.start();
+
     }
 
     //    矫正代码写这里

@@ -9,7 +9,7 @@ public interface OnImgProcFinishedListener {
 
     void onSaveImgSuccess();
 
-    void onPreProcessImgError();
+    void onPreProcessImgError(String error);
 
     void onCorrectionImgError();
 

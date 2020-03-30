@@ -8,7 +8,7 @@ public interface ViewApi {
 
     void hideProgressBar();
 
-    void setPreProcessError();
+    void setPreProcessError(String error);
 
     void setCorrectionError();
 
