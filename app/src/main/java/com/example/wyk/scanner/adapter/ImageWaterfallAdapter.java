@@ -1,5 +1,10 @@
 package com.example.wyk.scanner.adapter;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +17,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.wyk.scanner.R;
 import com.example.wyk.scanner.bean.ImageBean;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 public class ImageWaterfallAdapter extends RecyclerView.Adapter<ImageWaterfallAdapter.BaseViewHolder> {
-    private List<ImageBean> imageBeanList;
+    private List<File> files;
+    private Context context;
 
-    public ImageWaterfallAdapter(List<ImageBean> list) {
-        this.imageBeanList = list;
+    public ImageWaterfallAdapter(List<File> files, Context context) {
+        this.files = files;
+        this.context = context;
     }
 
     @NonNull
@@ -30,30 +39,35 @@ public class ImageWaterfallAdapter extends RecyclerView.Adapter<ImageWaterfallAd
 
     @Override
     public void onBindViewHolder(@NonNull BaseViewHolder holder, int position) {
-        holder.imageView.setImageResource(imageBeanList.get(position).getImage());
+
+//        Bitmap bitmap = BitmapFactory.decodeStream(context.getContentResolver()
+//                .openInputStream(filesUri.get(position)));
+//        Bitmap bmp = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.fromFile(file));
+
+        holder.imageView.setImageURI(Uri.fromFile(files.get(position)));
 
     }
 
     @Override
     public int getItemCount() {
-        return imageBeanList.size();
+        return files.size();
     }
 
-    public void replaceAll(List<ImageBean> list) {
-        imageBeanList.clear();
+    public void replaceAll(List<File> list) {
+        files.clear();
         if (list != null && list.size() > 0) {
-            imageBeanList.addAll(list);
+            files.addAll(list);
         }
         notifyDataSetChanged();
     }
 
-    public void addItem(int position, List<ImageBean> list) {
-        imageBeanList.addAll(position, list);
+    public void addItem(int position, List<File> list) {
+        files.addAll(position, list);
         notifyDataSetChanged();
     }
 
     public void removeItem(int position) {
-        imageBeanList.remove(position);
+        files.remove(position);
         notifyDataSetChanged();
     }
 
@@ -66,4 +80,5 @@ public class ImageWaterfallAdapter extends RecyclerView.Adapter<ImageWaterfallAd
             imageView = itemView.findViewById(R.id.item_manipulation_iv);
         }
     }
+
 }

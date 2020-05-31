@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.wyk.scanner.R;
 
@@ -18,10 +19,7 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.imgproc.Imgproc;
 
 import static com.example.wyk.scanner.view.MainActivity.CAMERA_PIC;
 
@@ -31,6 +29,8 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
     private JavaCameraView cameraView;
     private ImageView photoIv;
+    private Toolbar camToolbar;
+
     public static Mat mOriginalRGBA;
     private boolean isPhotoTaking;
 
@@ -79,6 +79,11 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
                 isPhotoTaking = true;
             }
         });
+
+        camToolbar = findViewById(R.id.app_camera_toolbar);
+        setSupportActionBar(camToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
     }
 
     @Override

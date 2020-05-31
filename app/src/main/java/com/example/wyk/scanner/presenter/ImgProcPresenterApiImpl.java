@@ -20,19 +20,27 @@ public class ImgProcPresenterApiImpl implements ImgProcPresenterApi, OnImgProcFi
     }
 
     @Override
-    public void preProcessImg(Context context, Mat src, Mat dst, double rotatedAngle) {
+    public void preProcessImg(Context context, Mat src, double rotatedAngle) {
         if (viewApi != null) {
             viewApi.showProgressBar();
         }
-        imageModelApi.preProcessImg(context, src, dst, rotatedAngle, this);
+        imageModelApi.preProcessImg(context, src, rotatedAngle, this);
     }
 
     @Override
-    public void correctionDocImg(Context context, Mat src, Mat dst) {
+    public void correctionDocImg(Context context, Mat src) {
         if (viewApi != null) {
             viewApi.showProgressBar();
         }
-        imageModelApi.correctImg(context, src, dst, this);
+        imageModelApi.correctDocImg(context, src, this);
+    }
+
+    @Override
+    public void thresholdImg(Context context, Mat src) {
+        if (viewApi != null) {
+            viewApi.showProgressBar();
+        }
+        imageModelApi.thresholdImg(context, src, this);
     }
 
     @Override
@@ -73,6 +81,14 @@ public class ImgProcPresenterApiImpl implements ImgProcPresenterApi, OnImgProcFi
     }
 
     @Override
+    public void onThresholdImgError() {
+        if (viewApi != null) {
+            viewApi.setThresholdError();
+            viewApi.hideProgressBar();
+        }
+    }
+
+    @Override
     public void onSaveImgSuccess() {
         if (viewApi != null) {
             viewApi.hideProgressBar();
@@ -83,21 +99,30 @@ public class ImgProcPresenterApiImpl implements ImgProcPresenterApi, OnImgProcFi
     @Override
     public void onPreProcessSuccess(Activity context, Bitmap bmp) {
         if (viewApi != null) {
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    viewApi.setPreProcessSuccess(bmp);
-                    viewApi.hideProgressBar();
-                }
+            context.runOnUiThread(() -> {
+                viewApi.setPreProcessSuccess(bmp);
+                viewApi.hideProgressBar();
             });
         }
     }
 
     @Override
-    public void onCorrectionSuccess() {
+    public void onCorrectionSuccess(Activity context, Bitmap bmp) {
         if (viewApi != null) {
-            viewApi.hideProgressBar();
-            viewApi.setCorrectionSuccess();
+            context.runOnUiThread(() -> {
+                viewApi.hideProgressBar();
+                viewApi.setCorrectionSuccess(bmp);
+            });
+        }
+    }
+
+    @Override
+    public void onThresholdSuccess(Activity context, Bitmap bmp) {
+        if (viewApi != null) {
+            context.runOnUiThread(() -> {
+                viewApi.hideProgressBar();
+                viewApi.setThresholdSuccess(bmp);
+            });
         }
     }
 }

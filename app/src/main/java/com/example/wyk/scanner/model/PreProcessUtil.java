@@ -92,7 +92,7 @@ public class PreProcessUtil {
 
 
     //切割旋转后的图像
-    public Mat cutRectArea(Mat correctionMat, Mat nativeCorrectMat, RotatedRect maxRect) {
+    public Mat cutRectArea(Mat nativeCorrectMat, RotatedRect maxRect) {
         Point[] maxRectPoint = new Point[4];
         maxRect.points(maxRectPoint);
 
@@ -151,10 +151,10 @@ public class PreProcessUtil {
                 }
             }
         }
-        Log.d(TAG_TEST, "方法一 最大contours index：" + indexList.get(0) + "\n对应contours area: " + Imgproc.contourArea(contours.get(indexList.get(0))));
+//        Log.d(TAG_TEST, "方法一 最大contours index：" + indexList.get(0) + "\n对应contours area: " + Imgproc.contourArea(contours.get(indexList.get(0))));
 
 //                判断一下是否为空，万一照片质量不好，未检测出来文档
-        if (indexList == null) {
+        if (indexList.size() == 0) {
             double maxArea = -1;
             double maxAreaIdx = -1;
             MatOfPoint tempContour = contours.get(0);
@@ -164,9 +164,12 @@ public class PreProcessUtil {
             for (int idx = 0; idx < contours.size(); idx++) {
                 tempContour = contours.get(idx);
                 double contourArea = Imgproc.contourArea(tempContour);
+                //当前轮廓面积比最大的区域面积大就检测是否为四边形
                 if (contourArea > maxArea) {
+                    //检测contour是否是四边形
                     MatOfPoint2f newMat = new MatOfPoint2f(tempContour.toArray());
                     int contourSize = (int) tempContour.total();
+                    //对图像轮廓点进行多边形拟合
                     Imgproc.approxPolyDP(newMat, approxCurve, contourSize * 0.05, true);
                     if (approxCurve.total() == 4) {
                         maxArea = contourArea;

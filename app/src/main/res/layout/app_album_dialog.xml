@@ -17,7 +17,7 @@
         />
     <ImageView
         android:layout_width="45dp"
-        android:layout_height="1dp"
+        android:layout_height="4dp"
         android:layout_marginTop="4dp"
         android:background="@drawable/app_dialog_line"
         />
@@ -46,15 +46,15 @@
             android:textSize="16sp"
             android:textColor="@color/app_black"
             />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="|"
-            android:textSize="16sp"
-            android:textColor="@color/app_light_blue"
-            android:textStyle="bold"
-            android:gravity="center"
-            />
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:text="|"-->
+            <!--android:textSize="16sp"-->
+            <!--android:textColor="@color/app_light_blue"-->
+            <!--android:textStyle="bold"-->
+            <!--android:gravity="center"-->
+            <!--/>-->
         <Button
             android:id="@+id/app_album_dialog_negative_bt"
             android:layout_width="0dp"

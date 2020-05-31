@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_margin="8dp"
     android:orientation="vertical">
 
@@ -10,21 +10,35 @@
         android:id="@+id/app_main_manipulation_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp"
+        android:layout_marginLeft="8dp"
         android:text="@string/app_main_manipulation_tv"
-        android:textColor="@color/app_grey"
+        android:textColor="@color/app_medium_bluegrey"
         android:textSize="16sp"
         android:textStyle="bold" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/app_main_manipulation_rcl"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+    </RelativeLayout>
 
     <com.scwang.smartrefresh.layout.SmartRefreshLayout
         android:id="@+id/item_manipulation_refresh_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <RelativeLayout
             android:id="@+id/item_manipulation_refresh_header"
             android:layout_width="match_parent"
-            android:layout_height="60dp">
+            android:layout_height="wrap_content">
 
             <ProgressBar
                 android:id="@+id/item_manipulation_refresh_header_pb"
@@ -36,17 +50,11 @@
                 android:indeterminateDrawable="@drawable/progressbar_animation_header" />
         </RelativeLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/app_main_manipulation_rcl"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </androidx.recyclerview.widget.RecyclerView>
 
         <RelativeLayout
             android:id="@+id/item_manipulation_refresh_footer"
             android:layout_width="match_parent"
-            android:layout_height="60dp">
+            android:layout_height="wrap_content">
 
             <ProgressBar
                 android:id="@+id/item_manipulation_refresh_footer_pb"

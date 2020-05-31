@@ -13,7 +13,12 @@ public interface OnImgProcFinishedListener {
 
     void onCorrectionImgError();
 
+    void onThresholdImgError();
+
     void onPreProcessSuccess(Activity context, Bitmap bmp);
 
-    void onCorrectionSuccess();
+    void onCorrectionSuccess(Activity context, Bitmap bmp);
+
+    void onThresholdSuccess(Activity context, Bitmap bmp);
+
 }

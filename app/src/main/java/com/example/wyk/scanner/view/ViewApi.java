@@ -12,11 +12,15 @@ public interface ViewApi {
 
     void setCorrectionError();
 
+    void setThresholdError();
+
     void setSaveImgError();
 
     void setPreProcessSuccess(Bitmap bmp);
 
-    void setCorrectionSuccess();
+    void setCorrectionSuccess(Bitmap bmp);
+
+    void setThresholdSuccess(Bitmap bmp);
 
     void setSaveImgSuccess();
 }

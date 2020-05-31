@@ -45,14 +45,20 @@ public class ImageModelApiImpl implements ImageModelApi {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-//                File appDir = new File(Environment.getExternalStorageDirectory(), "Scanner");
+//                getExternalFilesDir(“”).getAbsolutePath() = /storage/emulated/0/Android/data/packname/files
+//                这个方法用于获取某个应用在外部存储中的files路径
                 File appDir = context.getExternalFilesDir("Scanner");
+//                File appDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Scanner/");
+
                 if (!appDir.exists()) {
                     appDir.mkdir();
                     Log.d(TAG_TEST, "Scanner创建！");
                 }
                 String fileName = System.currentTimeMillis() + ".jpg";
                 File file = new File(appDir, fileName);
+                Log.d(TAG_TEST, "PATH: " + appDir);
+                Log.d(TAG_TEST, "File Name: " + file);
+                Log.d(TAG_TEST, "File absolutePath: " + file.getAbsolutePath());
                 try {
                     FileOutputStream fos = new FileOutputStream(file);
                     bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
@@ -88,7 +94,7 @@ public class ImageModelApiImpl implements ImageModelApi {
 
     //    预处理代码写这里
     @Override
-    public void preProcessImg(Context context, Mat src, Mat dst, double rotatedAngle, OnImgProcFinishedListener onImgProcFinishedListener) {
+    public void preProcessImg(Context context, Mat src, double rotatedAngle, OnImgProcFinishedListener onImgProcFinishedListener) {
 //        rows: Mat矩阵的行数。
 //        cols: Mat矩阵的列数。
 //        depth: 用来度量每一个像素中每一个通道的精度，但它本身与图像的通道数无关！
@@ -101,12 +107,14 @@ public class ImageModelApiImpl implements ImageModelApi {
             @Override
             public void run() {
                 super.run();
-//                锐化
-                Imgproc.filter2D(src, dst, src.depth(), kernel);
+                Mat dst = new Mat(src.width(), src.height(), CvType.CV_8UC4);
 //                灰度化
-                Imgproc.cvtColor(dst, dst, Imgproc.COLOR_RGBA2GRAY);
+                Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGBA2GRAY);
 //                高斯滤波
                 Imgproc.GaussianBlur(dst, dst, new Size(5, 5), 0);
+
+//                锐化
+//                Imgproc.filter2D(dst, dst, src.depth(), kernel);
 //                二值化
                 /*
                 thresh: 阈值
@@ -116,7 +124,7 @@ public class ImageModelApiImpl implements ImageModelApi {
                 当使用了THRESH_OTSU和THRESH_TRIANGLE两个标志时，输入图像必须为单通道。
                 */
 //                Imgproc.threshold(dst, dst, 0, 255, Imgproc.THRESH_OTSU + Imgproc.THRESH_BINARY);
-                Imgproc.threshold(dst, dst, 100, 200, Imgproc.THRESH_BINARY);
+                Imgproc.threshold(dst, dst, 100, 200, Imgproc.THRESH_BINARY + Imgproc.THRESH_OTSU);
 
 //                闭运算
                 Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
@@ -126,19 +134,18 @@ public class ImageModelApiImpl implements ImageModelApi {
 //                膨胀
                 Imgproc.dilate(dst, dst, element);
 //                边缘检测
-                Imgproc.Canny(dst, dst, 75, 200, 3);
+                Imgproc.Canny(dst, dst, 50, 200, 3);
 //                查找轮廓
                 List<MatOfPoint> contours = new ArrayList<>();
                 Mat hierarchy = new Mat();
                 Imgproc.findContours(dst, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
 //                加粗增强所有找到的轮廓，先不画出来了
-//                Imgproc.drawContours(dst, contours, -1, new Scalar(255), 3);
+//                Imgproc.drawContours(src, contours, -1, new Scalar(255, 255, 0), 3);
 
 //                再次查找轮廓
 //                contours.clear();
 //                hierarchy = new Mat();
 //                Imgproc.findContours(dst, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
-
 
                 //从高到低排序
                 contours.sort(new Comparator<MatOfPoint>() {
@@ -147,12 +154,11 @@ public class ImageModelApiImpl implements ImageModelApi {
                         return (int) (Imgproc.contourArea(m2) - Imgproc.contourArea(m1));
                     }
                 });
-//                Collections.reverse(contours);
                 List<Integer> indexList = new ArrayList<>();
                 PreProcessUtil preProcessUtil = new PreProcessUtil();
                 preProcessUtil.getMaxIndex(indexList, contours);
 
-                if (indexList != null){
+                if (indexList.size() > 0) {
                     MatOfPoint2f matOfPoint2fMax = new MatOfPoint2f(contours.get(indexList.get(0)).toArray());
                     double peri = Imgproc.arcLength(matOfPoint2fMax, true);
                     MatOfPoint2f approxCurveMax = new MatOfPoint2f();
@@ -166,18 +172,20 @@ public class ImageModelApiImpl implements ImageModelApi {
                     }
 
                     Point[] srcPoints = preProcessUtil.getSrcPoints(points);
-                    if (srcPoints != null){
+                    if (srcPoints != null) {
                         warpedMat[0] = preProcessUtil.getWarpedPerspective(src, srcPoints);
                         dstBmp[0] = Bitmap.createBitmap(warpedMat[0].width(), warpedMat[0].height(), Bitmap.Config.ARGB_8888);
                         Utils.matToBitmap(warpedMat[0], dstBmp[0]);
                     }
-                }else {
+                } else {
                     String errorDetect = "未检测到最大矩形框";
                     onImgProcFinishedListener.onPreProcessImgError(errorDetect);
                 }
 
                 if (warpedMat[0] != null && dstBmp[0] != null) {
 //                    传入bitmap，通知view绘制
+//                    dstBmp[0] = Bitmap.createBitmap(dst.width(), dst.height(), Bitmap.Config.ARGB_8888);
+//                    Utils.matToBitmap(dst, dstBmp[0]);
                     onImgProcFinishedListener.onPreProcessSuccess((Activity) context, dstBmp[0]);
                 } else {
                     String errorBmp = "未获取到处理后的图像";
@@ -189,15 +197,72 @@ public class ImageModelApiImpl implements ImageModelApi {
 
     }
 
-    //    矫正代码写这里
+    //    文字区域识别代码写这里
     @Override
-    public void correctImg(Context context, Mat src, Mat dst, OnImgProcFinishedListener onImgProcFinishedListener) {
+    public void correctDocImg(Context context, Mat src, OnImgProcFinishedListener onImgProcFinishedListener) {
 
-        if (dst == null) {
-            onImgProcFinishedListener.onCorrectionImgError();
-        } else {
-            onImgProcFinishedListener.onCorrectionSuccess();
-        }
+//        Mat gray = new Mat();
+//        Imgproc.cvtColor(src, gray, Imgproc.COLOR_RGBA2GRAY);
+//        //像素取反
+//        Mat thresh = new Mat();
+//        Imgproc.threshold(gray, thresh, 0, 255, Imgproc.THRESH_BINARY_INV | Imgproc.THRESH_OTSU);
+
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                CorrectDocUtil correctDocUtil = new CorrectDocUtil();
+
+                Mat dst = correctDocUtil.cutDocRectArea(src);
+
+                if (dst.width() > 0) {
+                    Bitmap dstBmp = Bitmap.createBitmap(dst.width(), dst.height(), Bitmap.Config.ARGB_8888);
+                    Utils.matToBitmap(dst, dstBmp);
+                    onImgProcFinishedListener.onCorrectionSuccess((Activity) context, dstBmp);
+                } else {
+                    onImgProcFinishedListener.onCorrectionImgError();
+                }
+            }
+        }.start();
+
+    }
+
+    @Override
+    public void thresholdImg(Context context, Mat src, OnImgProcFinishedListener onImgProcFinishedListener) {
+        Mat dst = new Mat(src.width(), src.height(), CvType.CV_8UC4);
+//        Mat kernel = new Mat(3, 3, CvType.CV_32F, new Scalar(-1));
+//        kernel.put(1, 1, 8.9);
+//        Imgproc.filter2D(src, dst, src.depth(), kernel);
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGBA2GRAY);
+
+//                Imgproc.GaussianBlur(dst, dst, new Size(5, 5), 0);
+                //        二值化
+//                Imgproc.threshold(dst, dst, 50, 200, Imgproc.THRESH_BINARY + Imgproc.THRESH_OTSU);
+                Imgproc.adaptiveThreshold(dst, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 15, 8);
+
+//                Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
+//                //        腐蚀
+//                Imgproc.erode(dst, dst, element);
+//                //        膨胀
+//                Imgproc.dilate(dst, dst, element);
+
+
+                Bitmap dstBmp = Bitmap.createBitmap(dst.width(), dst.height(), Bitmap.Config.ARGB_8888);
+                Utils.matToBitmap(dst, dstBmp);
+
+                if (dst.width() > 0 && dstBmp.getWidth() > 0) {
+                    onImgProcFinishedListener.onThresholdSuccess((Activity) context, dstBmp);
+                } else {
+                    onImgProcFinishedListener.onThresholdImgError();
+                }
+            }
+        }.start();
+
+
     }
 
 }

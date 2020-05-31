@@ -29,13 +29,20 @@
         </activity>
         <activity
             android:name=".view.CameraActivity"
-            android:launchMode="singleInstance"></activity>
+            android:launchMode="singleInstance"
+            android:parentActivityName=".view.MainActivity">
+
+        </activity>
+
         <activity
             android:name=".view.AlbumActivity"
-            android:launchMode="singleInstance"></activity>
+            android:launchMode="singleInstance"
+            android:parentActivityName=".view.MainActivity">
+        </activity>
         <activity
             android:name=".view.CamImgProcessActivity"
-            android:launchMode="singleInstance">
+            android:launchMode="singleInstance"
+            android:parentActivityName=".view.CameraActivity">
         </activity>
     </application>
 
